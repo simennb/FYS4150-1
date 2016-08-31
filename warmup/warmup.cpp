@@ -1,25 +1,62 @@
 /* Fancy program */
 
 #include <stdio.h>      /* printf */
-#include <math.h>       /* atan */
+#include <math.h>       /* mathfunctions */
+#include <iostream>     /* output */
+#include <fstream>      /* output to file */
 
-float f(float a)
+using namespace std;
+
+int singleprec()
 {
-  float r;
-  r = atan(a);
-  return r;
+  float hstop, dfdx2, dfdx3, x, h;
+  float fpluss, fnorm, fmin;
+  x = sqrt(2);
+  hstop = 1e-20;
+  for (h = 1; h > hstop; h /= 10)
+    { fpluss = atan(x + h);
+      fnorm = atan(x);
+      fmin = atan(x - h);
+      dfdx2 = (fpluss - fnorm)/h;
+      dfdx3 = (fpluss - fmin)/(2.0*h);
+      cout << "dfdx2 = "<< dfdx2 << ", ";
+      cout << "dfdx3 = "<< dfdx3 << ", ";
+      cout << "h = "<< h << "\n";
+    }
+  return 0;
 }
 
-float f2c(float x, float h)
+int doubleprec()
 {
-  float r;
-  r = (f(x + h) - f(x))/h;
-  return r;
+  double hstop, dfdx2, dfdx3, x, h;
+  double fpluss, fnorm, fmin;
+  x = sqrt(2);
+  hstop = 1e-20;
+  myfile.open("/home/eirik/Documents/Git/FYS4150/warmup/data/ex2cpp.txt");
+  for (h = 1; h > hstop; h /= 10)
+    { fpluss = atan(x + h);
+      fnorm = atan(x);
+      fmin = atan(x - h);
+      dfdx2 = (fpluss - fnorm)/h;
+      dfdx3 = (fpluss - fmin)/(2.0*h);
+      cout << "dfdx2 = "<< dfdx2 << ", ";
+      cout << "dfdx3 = "<< dfdx3 << ", ";
+      cout << "h = "<< h << "\n";
+      myfile << "dfdx2 = "<< dfdx2 << ", ";
+      myfile << "dfdx3 = "<< dfdx3 << ", ";
+      myfile << "h = "<< h << "\n";
+    }
+  return 0;
 }
 
-float f3c(float x, float h)
-{
-  float r;
-  r = (f(x+h) - f(x - h))/(2.0*h);
-  return r;
-}
+
+  int main(int argn, char** argv)
+  {
+    ofstream myfile;
+    singleprec();
+    cout << "\n";
+    doubleprec();
+    myfile.close();
+    return 0;
+  }
+  
