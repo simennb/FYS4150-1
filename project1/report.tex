@@ -1,0 +1,97 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel} 
+\usepackage{fullpage} 
+\usepackage{amsmath} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{verbatim} 
+%\usepackage{listings} 
+\usepackage{color} 
+\usepackage{setspace} 
+\usepackage{epstopdf} 
+\usepackage{braket}
+\usepackage{graphicx} 
+\usepackage{float}
+\usepackage{cite} 
+\usepackage{url}
+\usepackage[makeroom]{cancel}
+\usepackage{caption}
+\usepackage{subcaption}
+\pagestyle{empty}
+\usepackage[procnames]{listings}
+\bibliographystyle{plain}
+
+\makeatletter
+\newcommand*{\rom}[1]{\expandafter\@slowromancap\romannumeral #1@}
+\makeatother
+
+\newcommand{\s}{^{*}}
+\newcommand{\V}[1]{\textbf{#1}}
+
+\author{Eirik Ramsli Hauge}
+\title{Project 1 in FYS4150}
+
+\begin{document}
+	\maketitle
+	
+\begin{abstract}
+This is a place to write something really deep. Like: The future is a really big place. Wow...
+\end{abstract}
+\subsection*{Introduction}
+\subsection*{Theory}
+\begin{align*}
+\V{A}\times \V{v} &= \V{p} \\
+\begin{pmatrix}
+b_1 & c_1 & 0 & 0 \\
+a_1 & b_2 & c_2 & 0 \\
+0 & a_2 & b_3 & c_3 \\
+0 & 0 & a_3 & b_4 \\
+\end{pmatrix}
+\begin{pmatrix}
+v_1 \\ v_2 \\ v_3 \\ v_4
+\end{pmatrix} &= 
+\begin{pmatrix}
+p_1 \\ p_2 \\ p_3 \\ p_4
+\end{pmatrix}
+\end{align*}
+\begin{align*}
+\intertext{This gives us the following equations:}
+\text{\rom{1}}:& \, v_1b_1 + c_1v_2 &= p_1 \\
+\text{\rom{2}}:& \, a_1v_1 + b_2v_2 + c_2v_3 &= p_2 \\
+\text{\rom{3}}:& \, a_2v_2 + b_3v_3 + c_3v_4 &= p_3 \\
+\text{\rom{4}}:& \, a_3v_3 + b_4v_4 &= p4 \\
+\end{align*}
+We want only zeroes on the left side of the diagonal. Therefore, we do as follows:
+\begin{align*}
+p_2\s &= p_2 - p_1\cdot \frac{a_1}{b_1} \\
+&= a_1v_1 + b_2v_2 + c_2v_3 - v_1a_1 - v_2\frac{c_1a_1}{b_1} \\
+&= v_2(b_2 - \frac{c_1a_1}{b_1}) +c_2v_3 \\
+&= v_2b_2\s + c_2v_3 \\
+\intertext{Now we have the following matrix:}
+\hat{\V{A}} &= \begin{pmatrix}
+b_1 & c_1 & 0 & 0 \\
+0 & b_2\s & c_2 & 0 \\
+0 & a_2 & b_3 & c_3 \\
+0 & 0 & a_3 & b_4 \\
+\end{pmatrix}
+\intertext{As we can see, the a disappers from the second row. Just as we wanted. We do the same for the other rows}
+p_3\s &= p_3 - p_2\* \cdot \frac{a_2}{b_2\s} \\
+&= v_3(b_3 - \frac{c_2a_2}{b_2\s}) + c_3v_4 \\
+&= v_3b_3\s + c_3v_3
+\end{align*}
+General:
+\begin{equation}
+p_n\s = p_n - p_{n-1}\cdot\frac{a_{n-1}}{b_{n-1}\s}
+\end{equation}
+\begin{equation}
+b_n\s = b_n - \frac{c_{n-1}a_{n-1}}{b_{n-1}\s}
+\end{equation}
+\begin{equation}
+v_n = \frac{p_n\s - c_n v_{n+1}}{b_n\s}
+\end{equation}
+\subsection*{Programs}
+\subsection*{Results}
+\subsection*{Discussion}
+\subsection*{Conclusion}
+\end{document}
