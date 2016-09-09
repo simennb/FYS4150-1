@@ -3,8 +3,8 @@
 
 void source_term(int n, double h, double *x, double *p);
 
-void exact_solution(double *x, double *u_analytic);
+void exact_solution(int n, double *x, double *u_analytic);
 
-void relative_error(double *v, double *u,double *eps);
+void relative_error(int n, double *v, double *u, double *eps);
 
 #endif // FUNCTIONS_H
