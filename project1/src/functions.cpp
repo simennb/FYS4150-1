@@ -8,7 +8,7 @@ void source_term(int n, double h, double *x, double *p)
     /*!
      * \brief Evaluates the source term f(x) at point x
      */
-    for (int i=0; i<n; i++)
+    for (int i=0; i<n+1; i++)
     {
         p[i] = h*h*100.0*exp(-10.0*x[i]);
     }

@@ -30,7 +30,7 @@
 \newcommand{\V}[1]{\textbf{#1}}
 
 % Some commands etc. added by Simen
-\usepackage{physics}
+%\usepackage{physics}
 \usepackage{units}
 \newcommand\smat[1]{\big(\begin{smallmatrix}#1\end{smallmatrix}\big)}
 \newcommand\ppmat[1]{\begin{pmatrix}#1\end{pmatrix}}
@@ -54,9 +54,9 @@ This is a place to write something really deep. Like: The future is a really big
 \V{A}\times \V{v} &= \V{p} \\
 \begin{pmatrix}
 b_1 & c_1 & 0 & 0 \\
-a_1 & b_2 & c_2 & 0 \\
-0 & a_2 & b_3 & c_3 \\
-0 & 0 & a_3 & b_4 \\
+a_2 & b_2 & c_2 & 0 \\
+0 & a_3 & b_3 & c_3 \\
+0 & 0 & a_4 & b_4 \\
 \end{pmatrix}
 \begin{pmatrix}
 v_1 \\ v_2 \\ v_3 \\ v_4
@@ -68,15 +68,15 @@ p_1 \\ p_2 \\ p_3 \\ p_4
 \begin{align*}
 \intertext{This gives us the following equations:}
 \text{\rom{1}}:& \, v_1b_1 + c_1v_2 &= p_1 \\
-\text{\rom{2}}:& \, a_1v_1 + b_2v_2 + c_2v_3 &= p_2 \\
-\text{\rom{3}}:& \, a_2v_2 + b_3v_3 + c_3v_4 &= p_3 \\
-\text{\rom{4}}:& \, a_3v_3 + b_4v_4 &= p4 \\
+\text{\rom{2}}:& \, a_2v_1 + b_2v_2 + c_2v_3 &= p_2 \\
+\text{\rom{3}}:& \, a_3v_2 + b_3v_3 + c_3v_4 &= p_3 \\
+\text{\rom{4}}:& \, a_4v_3 + b_4v_4 &= p4 \\
 \end{align*}
 We want only zeroes on the left side of the diagonal. Therefore, we do as follows:
 \begin{align*}
-p_2\s &= p_2 - p_1\cdot \frac{a_1}{b_1} \\
-&= a_1v_1 + b_2v_2 + c_2v_3 - v_1a_1 - v_2\frac{c_1a_1}{b_1} \\
-&= v_2(b_2 - \frac{c_1a_1}{b_1}) +c_2v_3 \\
+p_2\s &= p_2 - p_1\cdot \frac{a_2}{b_1} \\
+&= a_2v_1 + b_2v_2 + c_2v_3 - v_1a_2 - v_2\frac{c_1a_2}{b_1} \\
+&= v_2(b_2 - \frac{c_1a_2}{b_1}) +c_2v_3 \\
 &= v_2b_2\s + c_2v_3 \\
 \intertext{Now we have the following matrix:}
 \hat{\V{A}} &= \begin{pmatrix}
@@ -86,16 +86,16 @@ b_1 & c_1 & 0 & 0 \\
 0 & 0 & a_3 & b_4 \\
 \end{pmatrix}
 \intertext{As we can see, the a disappers from the second row. Just as we wanted. We do the same for the other rows}
-p_3\s &= p_3 - p_2\* \cdot \frac{a_2}{b_2\s} \\
-&= v_3(b_3 - \frac{c_2a_2}{b_2\s}) + c_3v_4 \\
+p_3\s &= p_3 - p_2\* \cdot \frac{a_3}{b_2\s} \\
+&= v_3(b_3 - \frac{c_2a_3}{b_2\s}) + c_3v_4 \\
 &= v_3b_3\s + c_3v_3
 \end{align*}
 General:
 \begin{equation}
-p_n\s = p_n - p_{n-1}\cdot\frac{a_{n-1}}{b_{n-1}\s}
+p_n\s = p_n - p_{n-1}\cdot\frac{a_{n}}{b_{n-1}\s}
 \end{equation}
 \begin{equation}
-b_n\s = b_n - \frac{c_{n-1}a_{n-1}}{b_{n-1}\s}
+b_n\s = b_n - \frac{c_{n-1}a_{n}}{b_{n-1}\s}
 \end{equation}
 \begin{equation}
 v_n = \frac{p_n\s - c_n v_{n+1}}{b_n\s}
