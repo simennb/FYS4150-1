@@ -38,4 +38,3 @@ void relative_error(int n, double *v, double *u, double *eps)
     }
     return;
 }
-
