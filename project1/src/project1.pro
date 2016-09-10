@@ -4,7 +4,9 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.cpp\
-    functions.cpp
+    functions.cpp \
+    tridiag_solver.cpp
 
 HEADERS += \
-    functions.h
+    functions.h \
+    tridiag_solver.h

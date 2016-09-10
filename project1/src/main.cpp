@@ -4,7 +4,10 @@
 #include <string>
 #include <fstream>      /* output to file */
 #include <iomanip>      /* pretty, pretty */
+#include "time.h"
 #include "functions.h"
+#include "tridiag_solver.h"
+
 
 using namespace std;
 ofstream myfile;
@@ -24,6 +27,7 @@ int main(int argc, char *argv[])
 
     int n = 10;
     string outfile;
+    clock_t start, finish;
 
     /* Defining arrays */
     double *a = new double[n+2];
@@ -31,13 +35,9 @@ int main(int argc, char *argv[])
     double *c = new double[n+2];
 
     double *p = new double[n+2];
-    double *v = new double[n+2];
 
-    double *u = new double[n+2]; /* for exact solution */
-
-    /* since p = h^2*f, its probably better computationally to just do multiply by h in the function for f(x)
-    double *f = new double[n+1];
-    */
+    double *v = new double[n+2]; /* numerical approximated solution */
+    double *u = new double[n+2]; /* exact solution */
 
     double *x = new double[n+2];
     double h = 1.0/(n);
@@ -55,30 +55,32 @@ int main(int argc, char *argv[])
 
     /* Filling array p with values */
     source_term(n,h,x,p);
+    exact_solution(n,x,u); /* adding exact solution */
 
-    for (int i=1; i <= n; i++){ //n+1 instead?
-        p[i] = p[i] - p[i-1]*(a[i]/b[i-1]);
-        b[i] = b[i] - ((c[i-1]*a[i])/b[i-1]);
-        u[i] = 1.0 - (1.0 - exp(-10.0))*x[i] - exp(-10.0*x[i]);
-    }
-    cout << u[0] << endl;
+    start = clock();
+    /* Tridiagonal solving */
+    general_tridiag_solver(n,a,b,c,p,v);
 
-    v[n] = p[n]/b[n];   /*I believe there is something wrong with my indexing*/
-    for (int i=n-1; i >= 1; i--){
-        v[i] = (p[i] - c[i]*v[i+1])/b[i];
-    }
+    /* Timing solver */
+    finish = clock();
+    double time_elapsed = ((finish-start)/((double)CLOCKS_PER_SEC));
+    cout <<"time = "<<time_elapsed<<" s"<<endl;
 
     outfile = "../textfiles/1bN" + to_string(n) + ".txt";
 
+    /*! Simen: should probably not save every index, in case n is super large.
+     * For n=100k, datafile is 5 mb, so yeah
+    */
+
     // Open file and write the results to file:
-        myfile.open(outfile);
-        myfile << setiosflags(ios::showpoint | ios::uppercase);
-        myfile << "       x:          u(x):          v(x):  " << endl;
-        for (int i=0;i<=n;i++) {
-           myfile << setw(15) << setprecision(8) << x[i] << ",";
-           myfile << setw(15) << setprecision(8) << u[i] << ",";
-           myfile << setw(15) << setprecision(8) << v[i] << endl;
-        }
-        myfile.close();
+    myfile.open(outfile);
+    myfile << setiosflags(ios::showpoint | ios::uppercase);
+    myfile << "       x:          u(x):          v(x):  " << endl;
+    for (int i=0;i<=n;i++) {
+        myfile << setw(15) << setprecision(8) << x[i] << ",";
+        myfile << setw(15) << setprecision(8) << u[i] << ",";
+        myfile << setw(15) << setprecision(8) << v[i] << endl;
+    }
+    myfile.close();
     return 0;
 }
