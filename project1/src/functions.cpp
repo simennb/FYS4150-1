@@ -1,5 +1,6 @@
 #include <cmath>
 #include "functions.h"
+#include "tridiag_solver.h"
 
 using namespace std;
 

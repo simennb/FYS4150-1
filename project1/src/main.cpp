@@ -6,8 +6,8 @@
 #include <iomanip>      /* pretty, pretty */
 #include "time.h"
 #include "functions.h"
-#include "tridiag_solver.h"
-
+#include "solver.h"
+#include "lib.h"
 
 using namespace std;
 ofstream myfile;
@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
     start = clock();
     /* Tridiagonal solving */
     general_tridiag_solver(n,a,b,c,p,v);
+//    special_tridiag_solver(n,b,p,v);
 
     /* Timing solver */
     finish = clock();
@@ -71,7 +72,6 @@ int main(int argc, char *argv[])
     /*! Simen: should probably not save every index, in case n is super large.
      * For n=100k, datafile is 5 mb, so yeah
     */
-
     // Open file and write the results to file:
     myfile.open(outfile);
     myfile << setiosflags(ios::showpoint | ios::uppercase);

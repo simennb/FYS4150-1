@@ -5,8 +5,9 @@ CONFIG -= qt
 
 SOURCES += main.cpp\
     functions.cpp \
-    tridiag_solver.cpp
+    lib.cpp \
+    solver.cpp
 
 HEADERS += \
     functions.h \
-    tridiag_solver.h
+    solver.h
