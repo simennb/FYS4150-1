@@ -1,6 +1,6 @@
 #include <cmath>
 #include "functions.h"
-#include "tridiag_solver.h"
+#include "solver.h"
 
 using namespace std;
 
@@ -28,14 +28,22 @@ void exact_solution(int n, double *x, double *u_analytic)
     return;
 }
 
-void relative_error(int n, double *v, double *u, double *eps)
+double relative_error(int n, double *v, double *u, double *eps)
 {
     /*!
      * \brief Computes the relative error in the data set at index i
      */
+    double max_eps=1000.0;
     for (int i=0; i<n; i++)
     {
         eps[i] = log10(abs((v[i]-u[i])/u[i]));
+
+        /* Finding maximum value manually cause *max_element just gave errors */
+        if (eps[i] < max_eps)
+        {
+            max_eps = eps[i];
+        }
     }
-    return;
+
+    return max_eps;
 }

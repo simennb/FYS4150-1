@@ -1,3 +1,4 @@
+#include <iostream>     /* output */
 #include "solver.h"
 
 void general_tridiag_solver(int n, double *a, double *b, double *c, double *p, double*v)
