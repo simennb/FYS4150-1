@@ -10,4 +10,5 @@ SOURCES += main.cpp\
 
 HEADERS += \
     functions.h \
-    solver.h
+    solver.h \
+    lib.h

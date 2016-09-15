@@ -1,5 +1,6 @@
 #include <iostream>     /* output */
 #include "solver.h"
+#include "lib.h"
 
 void general_tridiag_solver(int n, double *a, double *b, double *c, double *p, double*v)
 {
@@ -44,10 +45,19 @@ void special_tridiag_solver(int n, double *b, double *p, double *v)
     return;
 }
 
-void LU_decomp_solver(int n, double *b, double *p, double *v)
+void LU_decomp_solver(int n, double **A_matrix, double *p)
 {
     /*!
-     * \brief Solving via general LU-decomposition
+     * \brief Solving via general LU-decomposition from lib.cpp
      */
+    int *indx = new int[n];
+    double d;
+    ludcmp(A_matrix, n, indx, &d); /* LU-decomposition */
+
+    lubksb(A_matrix,n, indx, p); /* Solves equation set. p is changed to solution */
+
+    /* Clearing up memory */
+    free_matrix((void**)A_matrix);
+    delete []indx;
     return;
 }

@@ -5,6 +5,6 @@ void general_tridiag_solver(int n, double *a, double *b, double *c, double *p, d
 
 void special_tridiag_solver(int n, double *b, double *p, double *v);
 
-void LU_decomp_solver(int n, double *b, double *p, double *v);
+void LU_decomp_solver(int n, double **A_matrix, double *p);
 
 #endif // SOLVER_H

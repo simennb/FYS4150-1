@@ -43,6 +43,7 @@ double relative_error(int n, double *v, double *u, double *eps)
         {
             max_eps = eps[i];
         }
+
     }
 
     return max_eps;
