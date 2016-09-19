@@ -1,0 +1,334 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{float}
+\usepackage[makeroom]{cancel}
+\usepackage[english]{babel}
+\usepackage{textcomp}
+\usepackage{gensymb}
+\usepackage{color}
+\usepackage{subcaption}
+\usepackage{caption}
+\usepackage{hyperref}
+\usepackage{physics}
+\usepackage{dsfont}
+%\usepackage{amsfonts}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{units}
+
+\usepackage{algorithmicx}
+\usepackage{algorithm}% http://ctan.org/pkg/algorithms
+\usepackage{algpseudocode}% http://ctan.org/pkg/algorithmicx
+
+\usepackage[margin=1cm]{caption}
+\usepackage[outer=1.2in,inner=1.2in]{geometry}
+% For writing full-size pages
+%\usepackage{geometry}
+%\geometry{
+%  left=5mm,
+%  right=5mm,
+%  top=5mm,
+%  bottom=5mm,
+%  heightrounded,
+%}
+
+% Finding overfull \hbox
+\overfullrule=2cm
+
+\lstset{language=IDL}
+ %\lstset{alsolanguage=c++}
+\lstset{basicstyle=\ttfamily\small}
+ %\lstset{backgroundcolor=\color{white}}
+\lstset{frame=single}
+\lstset{stringstyle=\ttfamily}
+\lstset{keywordstyle=\color{red}\bfseries}
+\lstset{commentstyle=\itshape\color{blue}}
+\lstset{showspaces=false}
+\lstset{showstringspaces=false}
+\lstset{showtabs=false}
+\lstset{breaklines}
+\lstset{aboveskip=20pt,belowskip=20pt}
+
+\lstset{basicstyle=\footnotesize, basewidth=0.5em}
+\lstdefinestyle{cl}{frame=none,basicstyle=\ttfamily\small}
+\lstdefinestyle{pr}{frame=single,basicstyle=\ttfamily\small}
+\lstdefinestyle{prt}{frame=none,basicstyle=\ttfamily\small}
+% \lstinputlisting[language=Python]{filename}
+
+
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{magenta}{rgb}{0.58,0,0.82}
+
+\lstdefinestyle{pystyle}{
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{dkgreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{gray},
+  stringstyle=\color{codepurple},
+  basicstyle=\footnotesize,
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+  numbers=left,
+  numbersep=5pt,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=2
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Self made macros here yaaaaaay
+\newcommand\answer[1]{\underline{\underline{#1}}}
+\newcommand\pd[2]{\frac{\partial #1}{\partial #2}}
+\newcommand\redrum[1]{\textcolor{red}{\textbf{#1}}}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+% Usage: \numberthis \label{name}
+% Referencing: \eqref{name}
+
+% Some matrices
+\newcommand\smat[1]{\big(\begin{smallmatrix}#1\end{smallmatrix}\big)}
+\newcommand\ppmat[1]{\begin{pmatrix}#1\end{pmatrix}}
+
+% Title/name/date
+\title{FYS4150 - Project 1}
+\author{Simen Nyhus Bastnes\\simennb}
+\date{19. September 2016}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}In project 1, we looked closer at how we can numerically solve the Poisson equation by expressing it as a linear set of equations on the form $\mathbf{A}\mathbf{v}=\mathbf{\tilde b}$. We develop an algorithm that makes use of the fact that our problem has a tridiagonal matrix and the identical nature of many of the values, and compare it to more general algorithms. We find that our special case algorithm follows $\mathcal{O}(4n)$ flops, the general tridiag. algorithm $\mathcal{O}(9n)$, and LU-decomposition $\mathcal{O}(\tfrac{2}{3}n^3)$. This results in execution time differences from fractions of seconds to many minutes when $n$ gets larger.
+\end{abstract}
+
+\section{Introduction}
+In this project, we want to study how to solve the one-dimensional Poisson equation from electromagnetism with numerical methods. Doing this allows us to get a deeper understanding for how various vector and matrix operations, and dynamic memory allocation works in C++, as well as using some of the programs in the library package of the course.\\\\
+After simplifying the equation slightly, we take a look at various methods for solving linear equation sets, and make an algorithm for a tridiagonal matrix. This we are able to compare to the more rigorous LU (\textit{lower-upper}) decomposition method.\\\\
+In our very specific problem, there exists an analytic solution, which allows us to see how the error changes depending on the step size we use for our numerical solution. Finally, we look at the execution time of the different algorithms to see how large the benefits are by using algorithms specifically tailored for the problem.\\\\
+In this project I collaborated with Eirik Ramsli Hauge on the programming, but for reasons, he got the dead line extended, so we are delivering separate reports. Since the repository is hosted on his github domain, I created a fork of it on my account, so that a copy of the project in its current/finished (on my part) state exists.
+
+\section{Theory}
+In this project, we will be looking at the Poisson equation, a classical equation from electromagnetism, which in a spherically symmetric electrostatic potential reads like
+\begin{align*}
+  \frac{1}{r^2}\frac{d}{dr}\bigg(r^2\frac{d\Phi}{dr}\bigg) &= -4\pi\rho(r)
+\end{align*}
+which we can rewrite by substituting $\Phi(r) = \phi(r)/r$ as
+\begin{align*}
+  \frac{d^2\phi}{dr^2} &= -4\pi r\rho(r)
+\end{align*}
+letting $\phi\rightarrow u$ and $r \rightarrow x$, we can further rewrite the equation.
+\begin{align*}
+  -u''(x) = f(x) \numberthis\label{main_eq}
+\end{align*}
+which is the equation we want to attempt to solve numerically. Specifically, we want to solve the one-dimensional Poisson equation \eqref{main_eq} with Dirichlet boundary conditions.
+\begin{align*}
+  -u''(x) = f(x),\;\;\;\;x\in(0,1),\;\;\;\;u(0) = u(1) = 0\\
+\end{align*}
+In order to start solve this numerically, we discretize the equation by approximating $u$ as $v_i$ with grid points $x_i = ih$ in the interval $x_0 = 0$ to $x_{n+1}=1$, with step length $h = 1/(n+1)$. The second derivative can then be approximated as
+\begin{align*}
+  -\frac{v_{i+1}+v_{i-1}-2v_i}{h^2} &= f_i\;\;\;\;\text{for }i=1,\dots,n
+\end{align*}
+where $f_i = f(x_i)$. We can show that this equation can be rewritten as a linear set of equation of the form
+\begin{align*}
+  \mathbf{A}\mathbf{v} &= \mathbf{\tilde b}
+\end{align*}
+where $\mathbf{A}$ is an $n\times n$ tridiagonal matrix representing the second derivative, on the form
+\begin{align*}
+\mathbf{A} &= \ppmat{2&-1&0&\dots&\dots&0\\-1&2&-1&0&\dots&\dots\\0&-1&2&-1&0&\dots\\&\dots&\dots&\dots&\dots&\dots\\0&\dots& &-1&2&-1\\
+0&\dots& &0&-1&2}\,,
+\end{align*}
+and $\tilde b_i = h^2f_i$. We will look closer at multiple ways to solve this set of equations in the next subsections.\\\\
+In the rest of this project, we will assume that the source term $f(x)$ is given by
+\begin{align*}
+f(x) = 100e^{-10x} \numberthis\label{eq:source_term}
+\end{align*}
+and that the analytical solution $u(x)$ is given by
+\begin{align*}
+  u(x) = 1-(1-e^{-10})x-e^{-10x} \numberthis\label{eq:analytical_solution}
+\end{align*}
+We will also be interested in the relative error between the analytical solution $u_i$ and our numerical solution $v_i$, which we find by
+\begin{align*}
+  \varepsilon_i &= \log_{10}\bigg|\frac{v_i-u_i}{u_i}\bigg| \numberthis\label{eq:rel_error}
+\end{align*}
+\subsection{LU-decomposition}
+One way of solving a linear equation set is by first factorizing $\mathbf{A}$ into a lower diagonal matrix $\mathbf{L}$, and an upper diagonal matrix $\mathbf{U}$. 
+\begin{align*}
+  \mathbf{A} = \mathbf{L}\mathbf{U}
+\end{align*}
+\begin{align*}
+  \ppmat{a_{11}&a_{12}&\dots&a_{1n}\\a_{21}&\ddots& &\vdots\\\vdots& &\ddots&\vdots\\a_{n1}&\dots&\dots&a_{nn}} = 
+  \ppmat{1&0&\dots&0\\l_{21}&1& &\vdots\\\vdots&\ddots&\ddots&0\\l_{n1}&\dots&l_{n,n-1}&1}
+  \ppmat{u_{11}&u_{12}&\dots&u_{1n}\\0&u_{22}& &\vdots\\\vdots& &\ddots&\vdots\\0&\dots&0&u_{nn}}
+\end{align*}
+For a quadratic matrix $\mathbf{A}$, this factorization exists if the determinant of $\mathbf{A}$ is different from zero.\\\\
+Our equation set can then be written as
+\begin{align*}
+  \mathbf{L}\mathbf{U}\mathbf{v} = \mathbf{\tilde b}
+\end{align*}
+which we can split up into two equations on the form
+\begin{align*}
+  \mathbf{L}\mathbf{y} = \mathbf{\tilde b}\;\;\;,\;\;\;\mathbf{U}\mathbf{v} =\mathbf{y}
+\end{align*}
+which we can solved by using backwards substitution to find $\mathbf{y}$, and then to finally find $\mathbf{v}$. Typically, solving an equation set via LU-decomposition and backwards substitution goes as $\mathcal{O}(\tfrac{2}{3}n^3)$, so for large values of $n$, this is quite computationally heavy.
+
+\subsection{General tridiagonal solver}
+Since our matrix $\mathbf{A}$ is a tridiagonal matrix (and thus a lot of matrix elements are zero), we realise that it would be ideal to solve the equation set in a more efficient way, rather than having to compute the full LU decomposition.\\\\
+First of all, we will be making a general algorithm to solve $\mathbf{A}\mathbf{v} = \mathbf{\tilde b}$, where we do not assume that we have a matrix with the same elements along the diagonal and the non-diagonal elements. Our equation set then looks like 
+\begin{align*}
+\ppmat{b_1&c_1&0&\dots&\dots&0\\a_1&b_2&c_2&0&\dots&\dots\\0&a_2&b_3&c_3&0&\dots\\&\dots&\dots&\dots&\dots&\dots\\0&\dots& &a_{n-2}&b_{n-1}&c_{n-1}\\
+0&\dots& &0&a_{n-1}&b_n}\ppmat{v_1\\v_2\\\dots\\\dots\\\dots\\v_n} = \ppmat{\tilde b_1\\\tilde b_2\\\dots\\\dots\\\dots\\\tilde b_n}
+\end{align*}
+To see more clearly what we are doing, we will look at the case $n=4$
+\begin{align*}
+  \ppmat{b_1&c_1&0&0\\a_1&b_2&c_2&0\\0&a_2&b_3&c_3\\0&0&a_3&b_4}
+  \ppmat{v_1\\v_2\\v_3\\v_4} = \ppmat{ p_1\\ p_2\\ p_3\\ p_4}
+\end{align*}
+and renaming $\tilde b_i$ to $p_i$ to avoid some confusion. We recall that if we could get $\mathbf{A}$ on the form of an upper- or lower diagonal matrix, we could solve the equation set by backwards substitution. Luckily, we can easily transform this to an upper diagonal matrix by forward substitution. To remove $a_1$ from the matrix, we do the following operation
+\begin{align*}
+  p_2^* &= p_2 - p_1\cdot\frac{a_1}{b_1}\\
+  &= a_1v_1 + b_2v_2 + c_2v_3 - \frac{a_1}{b_1}(b_1v_1 + c_1v_2)\\
+  &= \cancel{a_1v_1} + b_2v_2 + c_2v_3 - \cancel{a_1v_1}-\frac{c_1a_1}{b_1}v_2\\
+  &= v_2(b_2-\frac{c_1a_1}{b_1}) + c_3v_3 = b_2^*v_2 + c_3v_3
+\end{align*}
+where $b_2^* = b_2-\tfrac{a_1c_1}{b_1}$. Now our matrix looks like
+\begin{align*}
+  \ppmat{b_1&c_1&0&0\\
+    0&b_2^*&c_2&0\\
+    0&a_2&b_3&c_3\\
+    0&0&a_3&b_4}
+\end{align*}
+Repeating this, we can remove all the $a_i$'s from the matrix, giving us the algorithm for forward substitution
+\begin{algorithm}[H]
+\small
+\caption{Forward substitution}\label{alg:tri_forward}
+\begin{algorithmic}[1]
+\State $b_1^* = b_1$
+\State $p_1^* = p_1$
+\For{$i=2,\,n$}
+\State $b_i^* = b_i - a_{i-1}\cdot c_{i-1}/b_{i-1}^*$
+\State $p_i^* = p_i - p_{i-1}^*\cdot a_i/b_{i-1}^*$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+Now, we can substitute backwards, starting from $n$ to find $v_i$
+\begin{algorithm}[H]
+\small
+\caption{Backward substitution}\label{alg:tri_backward}
+\begin{algorithmic}[1]
+\State $v_n = p_n^*/b_n^*$
+\For{$i=n-1,\,1$}
+\State $v_i = (p_i^*-c_i\cdot v_{i+1})/b_i^*$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+Looking at the algorithms, we can count the number of floating point operations. In the forward substitution, we have 6 floating point operations, and 3 in the backward substitution, giving us $9n$ FLOPS.
+\subsection{Special tridiagonal solver}
+In the previous subsection, we found a general algorithm for solving an equation set with any tridiagonal matrix. And while this algorithm is considerably better than full LU-decomposition, we can use the fact that our matrix has identical matrix elements along the diagonal, and identical (but different) values for the non-diagonal elements.\\\\
+Since all $a_i = c_i = -1$ and $b_i = 2$, we can update the diagonal elements in the matrix to be
+\begin{align*}
+  d_i = \frac{i+1}{i}\,,\;\;\;\text{where }d_0 = d_n = 2
+\end{align*}
+and can be calculated beforehand, so that the full specialized algorithm ends up as
+\begin{algorithm}[H]
+\small
+\caption{Specialized algorithm}\label{alg:tri_special}
+\begin{algorithmic}[1]
+\State $p_1^* = p_1$
+\For{$i=2,\,n$} \Comment{Forward substitution}
+\State $p_i^* = p_i + p_{i-1}^*/d_{i-1}$
+\EndFor
+\State $v_n = p_n^*/d_n$
+\For{$i=n-1,\,1$} \Comment{Backwards substitution}
+\State $v_i = (p_i^* + v_{i+1})/d_i$ 
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+Counting the number of floating point operations here, we get $4n$ FLOPS, which is a decent improvement over the general algorithm ($9n$ FLOPS).
+
+\subsection{Implementation}
+The programs where the algorithms discussed earlier have been implemented, and used to generate the results in the next section lies in the GitHub repository (link also in reference \cite{cite:github})\\\\\href{https://github.com/simennb/FYS4150-1/tree/master/project1}{https://github.com/simennb/FYS4150-1/tree/master/project1}\\\\
+The C++ programs lies within the \texttt{src} folder, and the algorithms used to solve the problem are implemented in \texttt{solver.cpp}\\\\
+When running, the project is divided into three segments, and which one you intend to run needs to be specified by command line arguments.\\\\
+When specifying $\log_{10}(n)$, the program loops through all the powers up to the one specified, writing the desired results to file.
+
+\section{Results and discussion}
+In this section we will be looking at the results from implementing the algorithms discussed earlier.
+\subsection{Numerical accuracy}
+To see how well our numerical approximation works, we plot the analytical solution $u_i$ and our approximation $v_i$ for different values of $n$.
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.49]{../figures/task_b_N_10.png}
+  \caption{Numerical and analytical solution plotted for $N = 10$}
+  \label{fig:n10}
+\end{figure}
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth]{../figures/task_b_N_100.png}
+    \caption{Numerical and analytical solution}
+    \label{fig:n100}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.49\textwidth}
+    \includegraphics[width=\textwidth]{../figures/n100zoom.png}
+    \caption{Numerical and analytical, zoomed in}
+    \label{fig:n100_zoom}
+  \end{subfigure}
+  \caption{Numerical and analytical solution plotted both with $N = 100$}
+  \label{fig:n100_2}
+\end{figure}
+As we see for figure \ref{fig:n10}, the approximation is quite crude at low values of $n$, which is not surprising. However, just going up to $n=100$ (as shown in figure \ref{fig:n100}), makes the error decrease significantly. Going to even higher values of $n$, we would assume the error to decrease even further, but at some point the round-off error should start affecting the solution. Rather than showing how the error behaves in plots, we make a table of the relative error (equation \eqref{eq:rel_error}).
+\begin{table}[H]
+  \centering
+  \caption{Table of step length $\log_{10}(h)$ and maximal error $\varepsilon$}
+  \begin{tabular}{|c|c|c|}
+    \hline
+    $\mathbf{\text{\textbf{log}}_{10}(h)}$&\textbf{Rel. error}\\\hline
+    $-1$&$-1.1006$\\\hline
+    $-2$&$-3.0794$\\\hline
+    $-3$&$-5.0792$\\\hline
+    $-4$&$-7.0793$\\\hline
+    $-5$&$-9.0049$\\\hline
+    $-6$&$-6.7714$\\\hline
+  \end{tabular}
+  \label{tab:error}
+\end{table}
+In table \ref{tab:error}, we see how the error changes as we decrease the step length $h$. We observe that at $\log_{10}(h) = -5$, the error reaches a minimum, and increases again as we decrease the step length. From this, we can assume that this is the ideal step length for our numerical solution, though more values of $h$ could have been checked.\\\\
+Setting $\log_{10}(h) $ to $-7$ however causes the error to go to $\varepsilon = -13.53$, and why this happens, or what it means is unclear to me.
+
+\subsection{Comparing the different algorithms}
+Another important factor in evaluating how good our algorithm works, is how long they take to execute. From earlier, we found that the number of floating point operations go as $\mathcal{O}(\tfrac{2}{3}n^3)$ for the LU-decomposition, $\mathcal{O}(9n)$ for the general tridiagonal algorithm, and $\mathcal{O}(4n)$ for the specialized algorithm.
+\begin{table}[H]
+  \centering
+  \caption{Execution time for the different algorithms described earlier. For $n$ larger than $10^4$, there are no results for LU-decomposition.}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    $\mathbf{\text{\textbf{log}}_{10}(n)}$&\textbf{General [sec]}&\textbf{Special [sec]}&\textbf{LU-decomp. [sec]}\\\hline
+    1&$2.00\cdot10^{-6}$&$1.00\cdot10^{-6}$&$1.30\cdot10^{-5}$\\\hline
+    2&$4.00\cdot10^{-6}$&$3.00\cdot10^{-6}$&$0.0023$\\\hline
+    3&$3.60\cdot10^{-5}$&$2.70\cdot10^{-5}$&$1.5171$\\\hline
+    4&$3.69\cdot10^{-4}$&$2.88\cdot10^{-4}$&1980\\\hline
+    5&$0.0033$&$0.0025$&-\\\hline
+    6&$0.0343$&$0.0283$&-\\\hline
+  \end{tabular}
+  \label{tab:time}
+\end{table}
+From table \ref{tab:time} we observe that the execution time seems to roughly follow our FLOPS calculation. As expected, the full LU-decomposition takes considerably more time than any of the other methods. Furthermore, the LU-decomposition uses a lot more memory (as compared to the other), since it also stores a lot of zeros, and if we were to set $n = 10^5$, it would use a lot memory to store all the values. For a $10^5\times10^5$ matrix filled with doubles, this would be around 80 GB, which is a bit more than the standard of 8 GB most PCs have today. (the computer used while running this project has 4 GB).\\\\
+What this shows, is that there is quite a lot to gain, both memory and execution time wise by using an algorithm specifically tailored for the problem you are solving. 
+
+\begin{thebibliography}{40}
+  \bibitem{cite:github}Project 1 GitHub repository\\\href{https://github.com/simennb/FYS4150-1/tree/master/project1}{https://github.com/simennb/FYS4150-1/tree/master/project1}
+\end{thebibliography}
+
+\end{document}
